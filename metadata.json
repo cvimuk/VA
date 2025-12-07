@@ -1,0 +1,5 @@
+{
+  "name": "Veo Architect: Timelapse Prompter",
+  "description": "An AI assistant that analyzes construction phase images to generate professional prompts for Google Veo 3.1 video generation workflows.",
+  "requestFramePermissions": []
+}

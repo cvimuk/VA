@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { UploadedImage, GeneratedPrompts, AppState } from './types';
 import { ImageUploadCard } from './components/ImageUploadCard';
 import { PromptResult } from './components/PromptResult';
+import { CaptionResult } from './components/CaptionResult';
 import { generateVeoPrompts } from './services/geminiService';
-import { Clapperboard, Sparkles, Wand2, Film, Hammer, Camera } from 'lucide-react';
+import { Clapperboard, Sparkles, Wand2, Film, Hammer, Camera, MessageSquareQuote, Key } from 'lucide-react';
 
 const INITIAL_IMAGES: (UploadedImage | null)[] = [null, null, null];
 const DESCRIPTIONS = [
@@ -20,6 +21,7 @@ const DETAILED_DESC = [
 function App() {
   const [images, setImages] = useState<(UploadedImage | null)[]>(INITIAL_IMAGES);
   const [context, setContext] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [status, setStatus] = useState<AppState>(AppState.IDLE);
   const [results, setResults] = useState<GeneratedPrompts | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -66,11 +68,11 @@ function App() {
 
     try {
       const validImages = images as UploadedImage[]; // Type assertion safe due to check above
-      const prompts = await generateVeoPrompts(validImages, context);
+      const prompts = await generateVeoPrompts(validImages, context, apiKey);
       setResults(prompts);
       setStatus(AppState.SUCCESS);
-    } catch (err) {
-      setErrorMsg("Failed to generate prompts. Please check your API Key and try again.");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to generate prompts. Please check your API Key and try again.");
       setStatus(AppState.ERROR);
     }
   };
@@ -81,8 +83,8 @@ function App() {
     <div className="min-h-screen bg-gray-950 text-gray-100 font-sans selection:bg-amber-500/30">
       {/* Header */}
       <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="bg-amber-500 p-2 rounded-lg text-black">
               <Clapperboard size={24} />
             </div>
@@ -91,8 +93,18 @@ function App() {
               <p className="text-xs text-gray-500">Google Veo 3.1 Prompt Engineer</p>
             </div>
           </div>
-          <div className="text-xs text-gray-500 font-mono hidden sm:block">
-            For Google Flow Workflow
+          
+          <div className="flex items-center gap-3 w-full md:w-auto bg-gray-900 p-1.5 rounded-lg border border-gray-800 focus-within:border-amber-500/50 transition-colors">
+            <div className="p-1 text-gray-500">
+              <Key size={16} />
+            </div>
+            <input 
+              type="password"
+              placeholder="Paste Gemini API Key (Optional)"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none w-full md:w-64"
+            />
           </div>
         </div>
       </header>
@@ -127,14 +139,14 @@ function App() {
             <textarea
               value={context}
               onChange={(e) => setContext(e.target.value)}
-              placeholder="E.g., Modern Scandinavian renovation, workers should wear safety vests, warm afternoon lighting..."
+              placeholder="Add details here to refine your prompts (e.g., 'Modern Scandinavian renovation', 'Workers wearing orange vests', 'Warm sunset lighting')..."
               className="w-full bg-gray-950 border border-gray-800 rounded-lg p-4 text-sm text-gray-200 focus:outline-none focus:border-amber-500/50 transition-colors h-24 resize-none"
             />
           </div>
 
           <div className="flex justify-end">
              {errorMsg && (
-              <div className="mr-4 text-red-400 text-sm flex items-center">
+              <div className="mr-4 text-red-400 text-sm flex items-center bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">
                 {errorMsg}
               </div>
             )}
@@ -165,37 +177,54 @@ function App() {
 
         {/* Section 2: Results */}
         {results && (
-          <section className="space-y-8 animate-fade-in-up border-t border-gray-800 pt-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Film className="text-amber-500" size={20} />
-                <h2 className="text-xl font-semibold">2. Generated Prompts</h2>
+          <section className="space-y-12 animate-fade-in-up border-t border-gray-800 pt-10">
+            {/* Prompts */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Film className="text-amber-500" size={20} />
+                  <h2 className="text-xl font-semibold">2. Generated Prompts</h2>
+                </div>
+                <span className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-800">
+                  Ready for Google Flow
+                </span>
               </div>
-              <span className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-800">
-                Ready for Google Flow
-              </span>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <PromptResult 
+                  title="The Construction"
+                  step="Step 1 → 2"
+                  promptText={results.prompt1}
+                  icon={<Hammer size={24} />}
+                />
+                <PromptResult 
+                  title="The Finish Line"
+                  step="Step 2 → 3"
+                  promptText={results.prompt2}
+                  icon={<Sparkles size={24} />}
+                />
+                <PromptResult 
+                  title="Cinematic Reveal"
+                  step="Step 3 → Motion"
+                  promptText={results.prompt3}
+                  icon={<Camera size={24} />}
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <PromptResult 
-                title="The Construction"
-                step="Step 1 → 2"
-                promptText={results.prompt1}
-                icon={<Hammer size={24} />}
-              />
-              <PromptResult 
-                title="The Finish Line"
-                step="Step 2 → 3"
-                promptText={results.prompt2}
-                icon={<Sparkles size={24} />}
-              />
-               <PromptResult 
-                title="Cinematic Reveal"
-                step="Step 3 → Motion"
-                promptText={results.prompt3}
-                icon={<Camera size={24} />}
-              />
+            {/* Captions */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                <MessageSquareQuote className="text-amber-500" size={20} />
+                <h2 className="text-xl font-semibold">3. Social Media Titles</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {results.captions.map((caption, idx) => (
+                  <CaptionResult key={idx} caption={caption} index={idx} />
+                ))}
+              </div>
             </div>
+
           </section>
         )}
       </main>

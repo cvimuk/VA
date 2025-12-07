@@ -21,13 +21,16 @@ const fileToPart = async (file: File): Promise<{ inlineData: { data: string; mim
 
 export const generateVeoPrompts = async (
   images: UploadedImage[],
-  userContext: string
+  userContext: string,
+  customApiKey?: string
 ): Promise<GeneratedPrompts> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing. Please check your environment variables.");
+  const apiKey = customApiKey || process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please enter your Gemini API Key.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: apiKey });
 
   // Prepare image parts
   const imageParts = await Promise.all(images.map((img) => fileToPart(img.file)));
@@ -48,20 +51,25 @@ export const generateVeoPrompts = async (
         type: Type.STRING,
         description: "Prompt for Image 3 cinematic movement.",
       },
+      captions: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING },
+        description: "3 catchy social media captions/titles (max 100 chars) with hashtags for USA audience.",
+      }
     },
-    required: ["prompt1", "prompt2", "prompt3"],
+    required: ["prompt1", "prompt2", "prompt3", "captions"],
   };
 
   const systemPrompt = `
-    You are an expert Prompt Engineer for Google Veo 3.1, a high-fidelity video generation model.
-    Your task is to analyze 3 provided images (Start, Middle, End) and user context to create 3 specific video generation prompts.
+    You are an expert Prompt Engineer for Google Veo 3.1 and a Social Media Specialist.
+    Your task is to analyze 3 provided images (Start, Middle, End) and user context to create 3 specific video generation prompts AND 3 viral social media captions.
 
     **The Workflow:**
     1.  **Image 1 (Start):** Empty room/space.
     2.  **Image 2 (Middle):** Construction/Decoration in progress.
     3.  **Image 3 (End):** Finished, decorated room.
 
-    **Global Requirements for ALL Prompts:**
+    **Global Requirements for ALL Video Prompts:**
     - **Visual Style:** Photorealistic, 8k, highly detailed, DSLR footage, cinematic lighting.
     - **Characters:** MUST include workers or people working. Their attire must match the theme of the room/work.
     - **Audio:** MUST include specific ASMR sound effects related to the action (e.g., drilling, painting, shuffling, footsteps).
@@ -82,6 +90,13 @@ export const generateVeoPrompts = async (
     - Describe a slow, cinematic camera movement (e.g., slow pan, dolly in) showcasing the finished room.
     - The room is now alive but peaceful. Maybe one person enjoying the space or just pure architectural beauty.
     - Sounds: Room tone, distant city sound or nature sounds (depending on window view), soft fabric rustle.
+
+    **Caption/Title Generation Specifications:**
+    - Generate 3 distinct, catchy titles/captions for this video.
+    - **Target Audience:** USA (English language).
+    - **Length Constraint:** STRICTLY between 90 and 100 characters total.
+    - **Content:** Must relate to the transformation/ASMR/Satisfaction.
+    - **Hashtags:** Include 1-2 relevant hashtags (e.g., #asmr #satisfying #interiordesign).
 
     **User Context:** ${userContext}
     

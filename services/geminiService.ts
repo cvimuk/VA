@@ -49,7 +49,7 @@ export const generateVeoPrompts = async (
       },
       prompt3: {
         type: Type.STRING,
-        description: "Prompt for Image 3 cinematic movement.",
+        description: "Prompt for Image 3 cinematic movement (Walkthrough or Orbit).",
       },
       captions: {
         type: Type.ARRAY,
@@ -71,25 +71,31 @@ export const generateVeoPrompts = async (
 
     **Global Requirements for ALL Video Prompts:**
     - **Visual Style:** Photorealistic, 8k, highly detailed, DSLR footage, cinematic lighting.
-    - **Characters:** MUST include workers or people working. Their attire must match the theme of the room/work.
-    - **Audio:** MUST include specific ASMR sound effects related to the action (e.g., drilling, painting, shuffling, footsteps).
+    - **Characters:** MUST include workers or people working in every clip. Their attire must match the theme (e.g., hard hats for construction, casual/formal for finished spaces).
+    - **Audio:** MUST include specific ASMR sound effects related to the action.
     - **Audio Negative:** NO MUSIC. Ambient sounds only.
     - **Format:** The prompts should be descriptive and flow naturally.
 
     **Prompt 1 Specification (Start -> Middle):**
-    - Describe a timelapse transformation from the empty state to the construction state.
+    - **Type:** Timelapse.
+    - Describe the transformation from the empty state to the construction state.
     - Mention construction workers entering, bringing materials, setting up scaffolding or tools.
     - Sounds: Echoey footsteps, equipment setting up, light construction noises.
 
     **Prompt 2 Specification (Middle -> End):**
-    - Describe a timelapse transformation from the construction state to the finished state.
+    - **Type:** Timelapse.
+    - Describe the transformation from the construction state to the finished state.
     - Workers applying final touches, cleaning up, placing furniture, then leaving.
     - Sounds: Painting strokes, adjusting furniture, clicking of tools, satisfaction sighs.
 
-    **Prompt 3 Specification (End -> Cinematic):**
-    - Describe a slow, cinematic camera movement (e.g., slow pan, dolly in) showcasing the finished room.
-    - The room is now alive but peaceful. Maybe one person enjoying the space or just pure architectural beauty.
-    - Sounds: Room tone, distant city sound or nature sounds (depending on window view), soft fabric rustle.
+    **Prompt 3 Specification (End -> Cinematic Movement):**
+    - **Type:** Real-time Cinematic Movement (NOT Timelapse).
+    - **CRITICAL:** Analyze the "End" image to determine if it is an Interior or Exterior scene.
+    - **If Interior:** Generate a "Walkthrough" or "Dolly In" prompt. Describe the camera smoothly moving *forward into* the space, guiding the viewer to explore details (furniture, lighting, textures).
+    - **If Exterior/Building:** Generate an "Orbit" or "Overview" prompt. Describe the camera circling the subject or panning to showcase the scale and architecture, keeping the main building centered.
+    - **Movement:** Smooth, professional, steady-cam or gimbal feel.
+    - **Characters:** Include a person/worker in the shot to maintain the rule (e.g., an architect checking plans, a cleaner doing a final wipe, or a person simply admiring the space).
+    - **Audio:** High-quality ambient room tone, distant city sounds (if urban), wind (if exterior), footsteps on the specific floor material.
 
     **Caption/Title Generation Specifications:**
     - Generate 3 distinct, catchy titles/captions for this video.

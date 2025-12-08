@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UploadedImage, GeneratedPrompts, AppState } from './types';
 import { ImageUploadCard } from './components/ImageUploadCard';
 import { PromptResult } from './components/PromptResult';
@@ -17,14 +17,26 @@ const DETAILED_DESC = [
   "Upload the photo of the work in progress.",
   "Upload the final, fully decorated photo."
 ];
+const API_KEY_STORAGE_KEY = 'veo_architect_api_key';
 
 function App() {
   const [images, setImages] = useState<(UploadedImage | null)[]>(INITIAL_IMAGES);
   const [context, setContext] = useState("");
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(() => {
+    return localStorage.getItem(API_KEY_STORAGE_KEY) || "";
+  });
   const [status, setStatus] = useState<AppState>(AppState.IDLE);
   const [results, setResults] = useState<GeneratedPrompts | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Persist API Key to LocalStorage
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+    } else {
+      localStorage.removeItem(API_KEY_STORAGE_KEY);
+    }
+  }, [apiKey]);
 
   const handleUpload = (file: File, index: number) => {
     const reader = new FileReader();
@@ -204,7 +216,7 @@ function App() {
                   icon={<Sparkles size={24} />}
                 />
                 <PromptResult 
-                  title="Cinematic Reveal"
+                  title="Cinematic Walkthrough/Orbit"
                   step="Step 3 → Motion"
                   promptText={results.prompt3}
                   icon={<Camera size={24} />}
